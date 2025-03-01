@@ -16,8 +16,9 @@ def fft_mae(df, df_reduced):
 def main():
     WORK_DIR = r"../src/raw_data/train"
     RES_DIR = r"../src/raw_data/train_reduced.zip"
-
-    currentFile = os.listdir(WORK_DIR)[0]
+    
+    print(os.listdir(WORK_DIR))
+    # currentFile = os.listdir(WORK_DIR)[0]
     threshold = 0.01
 
     df = pd.read_csv(os.path.join(WORK_DIR, currentFile), sep="\\s+", header=None, names=["time", "pressure"])
@@ -43,6 +44,7 @@ def main():
         zipf.write(currentFile + "tmp", currentFile)
 
     os.remove(currentFile + "tmp")
+
 
 if __name__ == '__main__':
     main()

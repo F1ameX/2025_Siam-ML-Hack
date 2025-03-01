@@ -1,3 +1,4 @@
 .idea/
 /src/.DS_Store
 /src/raw_data/train
+venv

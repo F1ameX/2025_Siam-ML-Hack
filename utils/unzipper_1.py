@@ -2,7 +2,6 @@ import zipfile
 import os
 import shutil
 
-os.chdir('../')
 with zipfile.ZipFile('src/raw_data/task_21.zip', 'r') as zip_ref:
     zip_ref.extractall('src/raw_data/')
 

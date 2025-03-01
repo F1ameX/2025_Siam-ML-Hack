@@ -16,15 +16,8 @@ def fft_mae(df, df_reduced):
 def main():
     WORK_DIR = r"../src/raw_data/train"
     RES_DIR = r"../src/raw_data/train_reduced.zip"
-<<<<<<< Updated upstream
-    
-    print(os.listdir(WORK_DIR))
-    # currentFile = os.listdir(WORK_DIR)[0]
-    threshold = 0.01
-=======
 
     files = os.listdir(WORK_DIR)
->>>>>>> Stashed changes
 
     for i in range(0, len(files)):
 
@@ -32,15 +25,15 @@ def main():
 
         df = pd.read_csv(os.path.join(WORK_DIR, currentFile), sep="\\s+", header=None, names=["time", "pressure"])
 
-        pressure_diffs = df["time"].diff().dropna()
+        pressure_diffs = df["pressure"].diff().abs().dropna()
         threshold = min(pressure_diffs[pressure_diffs > 0])
-        print(threshold, currentFile)
-        meanTimeDiff = pressure_diffs.mean()
+
+        meanDiff = pressure_diffs.mean()
 
         df_reduced = df.loc[(df["pressure"].diff().abs() > threshold).fillna(True)]
         error = fft_mae(df, df_reduced)
 
-        while threshold <= meanTimeDiff and error <= 1000:
+        while threshold < meanDiff and error < 1000 and threshold != 0:
 
             threshold *= 1.1
             df_reduced = df.loc[(df["pressure"].diff().abs() > threshold).fillna(True)]

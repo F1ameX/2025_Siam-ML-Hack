@@ -16,34 +16,45 @@ def fft_mae(df, df_reduced):
 def main():
     WORK_DIR = r"../src/raw_data/train"
     RES_DIR = r"../src/raw_data/train_reduced.zip"
+<<<<<<< Updated upstream
     
     print(os.listdir(WORK_DIR))
     # currentFile = os.listdir(WORK_DIR)[0]
     threshold = 0.01
+=======
 
-    df = pd.read_csv(os.path.join(WORK_DIR, currentFile), sep="\\s+", header=None, names=["time", "pressure"])
+    files = os.listdir(WORK_DIR)
+>>>>>>> Stashed changes
 
-    pressure_diffs = df["time"].diff().dropna()
-    meanTimeDiff = pressure_diffs.mean()
+    for i in range(0, len(files)):
 
-    df_reduced = df.loc[(df["pressure"].diff().abs() > threshold).fillna(True)]
-    error = fft_mae(df, df_reduced)
+        currentFile = files[i]
 
-    while threshold <= meanTimeDiff and error <= 1000:
+        df = pd.read_csv(os.path.join(WORK_DIR, currentFile), sep="\\s+", header=None, names=["time", "pressure"])
 
-        threshold *= 1.1
+        pressure_diffs = df["time"].diff().dropna()
+        threshold = min(pressure_diffs[pressure_diffs > 0])
+        print(threshold, currentFile)
+        meanTimeDiff = pressure_diffs.mean()
+
         df_reduced = df.loc[(df["pressure"].diff().abs() > threshold).fillna(True)]
         error = fft_mae(df, df_reduced)
 
-    print(error, threshold)
+        while threshold <= meanTimeDiff and error <= 1000:
 
-    with open(currentFile + "tmp", "w") as file:
-        file.write(df_reduced.to_string())
+            threshold *= 1.1
+            df_reduced = df.loc[(df["pressure"].diff().abs() > threshold).fillna(True)]
+            error = fft_mae(df, df_reduced)
 
-    with zipfile.ZipFile(RES_DIR, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
-        zipf.write(currentFile + "tmp", currentFile)
+        print(currentFile, error, threshold)
 
-    os.remove(currentFile + "tmp")
+        with open(currentFile + "tmp", "w") as file:
+            file.write(df_reduced.to_string())
+
+        with zipfile.ZipFile(RES_DIR, "a", compression=zipfile.ZIP_DEFLATED) as zipf:
+            zipf.write(currentFile + "tmp", currentFile)
+
+        os.remove(currentFile + "tmp")
 
 
 if __name__ == '__main__':

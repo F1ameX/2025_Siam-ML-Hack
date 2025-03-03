@@ -42,7 +42,7 @@ def main():
         print(currentFile, error, threshold)
 
         with open(currentFile + "tmp", "w") as file:
-            file.write(df_reduced.to_string())
+            file.write(df_reduced.to_string(index = False, header = False))
 
         with zipfile.ZipFile(RES_DIR, "a", compression=zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(currentFile + "tmp", currentFile)

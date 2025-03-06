@@ -86,7 +86,7 @@ def process_file(file_path):
             denoised_chunks.append(denoised_chunk.cpu())
     
     denoised_output = torch.cat(denoised_chunks, dim=0)
-    denoised_data = scaler.inverse_transform(denoised_output.numpy().squeeze())
+    denoised_data = denoised_output.numpy().squeeze()
     
     df = df.iloc[:len(denoised_data)]  
     df["pressure"] = denoised_data

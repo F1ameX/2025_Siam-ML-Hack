@@ -9,16 +9,14 @@ from tqdm import tqdm
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 MODEL_PATH = "models/dae_final.pth"
 TRAIN_DIR = "src/train_reduced/"
 TEST_DIR = "src/raw_data/test/"
 DENOISED_TRAIN_ZIP = "src/raw_data/train_denoised.zip"
-DENOISED_TEST_ZIP = "src/raw_data/test_enoised.zip"
+DENOISED_TEST_ZIP = "src/raw_data/test_denoised.zip"
 SEQUENCE_LENGTH = 100  
 CHUNK_SIZE = 500  
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
 
 class CharbonnierLoss(nn.Module):
     def __init__(self, epsilon=1e-3):
@@ -59,12 +57,10 @@ class DAE(nn.Module):
         x = self.conv2(x.transpose(1, 2)).transpose(1, 2)
         return x
 
-
 model = DAE()
 model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
 model.to(DEVICE)
 model.eval()
-
 
 def process_file(file_path):
     df = pd.read_csv(file_path, sep="\\s+", names=["time", "pressure"])
@@ -93,7 +89,6 @@ def process_file(file_path):
 
     return df
 
-
 def process_directory(directory, output_zip):
     with ZipFile(output_zip, "w") as zipf:
         for file_name in tqdm(os.listdir(directory), desc=f"Processing {directory}"):
@@ -101,11 +96,12 @@ def process_directory(directory, output_zip):
             if os.path.isfile(file_path):
                 df_denoised = process_file(file_path)
                 if df_denoised is not None:
-                    temp_csv = f"{file_name}.csv"
-                    df_denoised.to_csv(temp_csv, sep=" ", index=False, header=False)
-                    zipf.write(temp_csv, arcname=temp_csv)
-                    os.remove(temp_csv)
-
+                    temp_file = file_name + "_tmp"
+                    with open(temp_file, "w") as file:
+                        file.write(df_denoised.to_string(index=False, header=False))
+                    with ZipFile(output_zip, "a", compression=ZipFile.ZIP_DEFLATED) as zipf:
+                        zipf.write(temp_file, file_name)
+                    os.remove(temp_file)
 
 process_directory(TRAIN_DIR, DENOISED_TRAIN_ZIP)
 process_directory(TEST_DIR, DENOISED_TEST_ZIP)

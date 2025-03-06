@@ -2,6 +2,7 @@ import zipfile
 import os
 import shutil
 
+os.getcwd()
 def extract(zip_path, extract_path):
     with zipfile.ZipFile(zip_path, 'r') as zipf:
         zipf.extractall(extract_path)
@@ -14,4 +15,5 @@ def extract(zip_path, extract_path):
         shutil.rmtree('__MACOSX')
 
 extract('src/raw_data/train_denoised.zip', 'src/train_denoised/')
+os.chdir("../../")
 extract('src/raw_data/test_denoised.zip', 'src/test_denoised/')

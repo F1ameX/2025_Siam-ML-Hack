@@ -2,3 +2,5 @@
 .DS_Store
 /src/raw_data/train
 /src/train_reduced
+/src/train_denoised
+/src/test_denoised

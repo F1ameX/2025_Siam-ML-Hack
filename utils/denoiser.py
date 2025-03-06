@@ -11,10 +11,10 @@ import torch.nn.functional as F
 
 
 MODEL_PATH = "models/dae_final.pth"
-TRAIN_DIR = "src/raw_data/train/"
+TRAIN_DIR = "src/train_reduced/"
 TEST_DIR = "src/raw_data/test/"
-DENOISED_TRAIN_ZIP = "src/raw_data/denoised_train.zip"
-DENOISED_TEST_ZIP = "src/raw_data/denoised_test.zip"
+DENOISED_TRAIN_ZIP = "src/raw_data/train_denoised.zip"
+DENOISED_TEST_ZIP = "src/raw_data/test_enoised.zip"
 SEQUENCE_LENGTH = 100  
 CHUNK_SIZE = 500  
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -68,7 +68,7 @@ model.eval()
 
 def process_file(file_path):
     df = pd.read_csv(file_path, sep="\\s+", names=["time", "pressure"])
-    if df.empty or "pressure" not in df:
+    if df.empty or "pressure" not in df or len(df) < SEQUENCE_LENGTH * 5:
         return None
     
     scaler = MinMaxScaler()

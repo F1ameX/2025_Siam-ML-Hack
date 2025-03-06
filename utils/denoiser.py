@@ -2,8 +2,8 @@ import os
 import torch
 import pandas as pd
 import numpy as np
-from torch.utils.data import DataLoader
 from sklearn.preprocessing import MinMaxScaler
+import zipfile
 from zipfile import ZipFile
 from tqdm import tqdm
 import torch.nn as nn
@@ -57,12 +57,16 @@ class DAE(nn.Module):
         x = self.conv2(x.transpose(1, 2)).transpose(1, 2)
         return x
 
+
 model = DAE()
 model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
 model.to(DEVICE)
 model.eval()
 
 def process_file(file_path):
+    df = pd.read_csv(file_path, sep="\\s+", names=["time", "pressure"], encoding='utf-8') 
+
+    
     df = pd.read_csv(file_path, sep="\\s+", names=["time", "pressure"])
     if df.empty or "pressure" not in df or len(df) < SEQUENCE_LENGTH * 5:
         return None
@@ -90,8 +94,11 @@ def process_file(file_path):
     return df
 
 def process_directory(directory, output_zip):
-    with ZipFile(output_zip, "w") as zipf:
+    with ZipFile(output_zip, "w", compression=zipfile.ZIP_DEFLATED) as zipf: 
         for file_name in tqdm(os.listdir(directory), desc=f"Processing {directory}"):
+            if file_name == ".DS_Store":
+                continue
+            
             file_path = os.path.join(directory, file_name)
             if os.path.isfile(file_path):
                 df_denoised = process_file(file_path)
@@ -99,9 +106,9 @@ def process_directory(directory, output_zip):
                     temp_file = file_name + "_tmp"
                     with open(temp_file, "w") as file:
                         file.write(df_denoised.to_string(index=False, header=False))
-                    with ZipFile(output_zip, "a", compression=ZipFile.ZIP_DEFLATED) as zipf:
-                        zipf.write(temp_file, file_name)
-                    os.remove(temp_file)
+                    
+                    zipf.write(temp_file, file_name) 
+                    os.remove(temp_file) 
 
 process_directory(TRAIN_DIR, DENOISED_TRAIN_ZIP)
 process_directory(TEST_DIR, DENOISED_TEST_ZIP)
